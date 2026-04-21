@@ -48,4 +48,15 @@ public class SurveyController {
     public ResponseEntity<Survey> publishSurvey(@PathVariable String id) {
         return ResponseEntity.ok(surveyService.publishSurvey(id));
     }
+
+    // ─────────────────────────────────────────
+    // DELETE SURVEY — used by test teardown for cleanup
+    // ─────────────────────────────────────────
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSurvey(
+            @PathVariable String id,
+            @RequestHeader("X-User-Id") String userId) {
+        surveyService.deleteSurvey(id, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

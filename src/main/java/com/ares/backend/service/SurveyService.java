@@ -23,6 +23,9 @@ public class SurveyService {
     private final GBCRAlgorithm gbcrAlgorithm;
     private final SimpMessagingTemplate messagingTemplate;
 
+    // ─────────────────────────────────────────
+    // CREATE SURVEY
+    // ─────────────────────────────────────────
     public Survey createSurvey(SurveyRequest request, String userId) {
         Survey survey = new Survey();
         survey.setTitle(request.getTitle());
@@ -39,14 +42,23 @@ public class SurveyService {
         return saved;
     }
 
+    // ─────────────────────────────────────────
+    // GET ALL SURVEYS
+    // ─────────────────────────────────────────
     public List<Survey> getAllSurveys() {
         return surveyRepository.findAll();
     }
 
+    // ─────────────────────────────────────────
+    // GET SURVEY BY ID
+    // ─────────────────────────────────────────
     public Optional<Survey> getSurveyById(String id) {
         return surveyRepository.findById(id);
     }
 
+    // ─────────────────────────────────────────
+    // PUBLISH SURVEY
+    // ─────────────────────────────────────────
     public Survey publishSurvey(String id) {
         Survey survey = surveyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Survey not found"));
@@ -83,6 +95,23 @@ public class SurveyService {
         checkActiveSessions(updated);
 
         return updated;
+    }
+
+    public void deleteSurvey(String id, String userId) {
+        Survey survey = surveyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Survey not found: " + id));
+
+        // Delete sessions for all statuses using existing repository methods
+        for (UserSession.SessionStatus status : UserSession.SessionStatus.values()) {
+            List<UserSession> sessions = sessionRepository.findBySurveyIdAndStatus(id, status);
+            if (sessions != null && !sessions.isEmpty()) {
+                sessionRepository.deleteAll(sessions);
+                log.info("Deleted {} {} sessions for survey {}", sessions.size(), status, id);
+            }
+        }
+
+        surveyRepository.delete(survey);
+        log.info("Survey {} deleted by {}", id, userId);
     }
 
     // ─────────────────────────────────────────

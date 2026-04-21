@@ -11,4 +11,5 @@ public interface SessionRepository extends MongoRepository<UserSession, String> 
     List<UserSession> findBySurveyIdAndStatus(String surveyId, UserSession.SessionStatus status);
 
     List<UserSession> findBySurveyId(String surveyId);
+
 }
